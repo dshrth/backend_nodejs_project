@@ -6,7 +6,6 @@ import { apiResponseHandler } from "../utills/apiResponseHandler.js";
 
 const registerUser = asyncHandler(async (req, res) => {
     const {userName, email, fullName, password} = req.body;
-    console.log("userName: ", userName);
 
     if ([fullName, email, userName, password].some((filed) => 
     filed?.trim() === "")
@@ -14,7 +13,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new apiErrorHandler(400, "All Filedds are required ??")
 }
 
-const excitiedUser = User.findOne({
+const excitiedUser = await User.findOne({
     $or: [{ userName }, { email }]
 })
 
@@ -23,10 +22,15 @@ if(excitiedUser){
 }
 
 const avatarLocalPath = req.files?.avatar[0]?.path;
-const coverImageLocalPath = req.files?.coverImage[0]?.path;
+// const coverImageLocalPath = req.files?.abcd[0]?.path;
 
-if(avatarLocalPath){
+if(!avatarLocalPath){
     throw new apiErrorHandler(400, "avatar file is required");
+}
+
+let coverImageLocalPath;
+if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0 ){
+    coverImageLocalPath = req.files.coverImage[0].path
 }
 
 const avatar = await uploadOnCloudinary(avatarLocalPath);
